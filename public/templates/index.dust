@@ -1,0 +1,13 @@
+{>"layouts/master" /}
+
+{<headScripts}
+    <script src="/components/pixi.js/bin/pixi.js"></script>
+{/headScripts}
+{<body}
+
+{/body}
+{<bodyScripts}
+    <script>
+        setupGamePage();
+    </script>
+{/bodyScripts}

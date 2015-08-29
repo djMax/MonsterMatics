@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>PIXI Concentration</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    {+headScripts/}
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+{+body/}
+<script src="/js/app.js"></script>
+{+bodyScripts/}
+</body>
+</html>

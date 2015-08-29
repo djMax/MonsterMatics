@@ -1,0 +1,21 @@
+{
+  "name": "monstermatics",
+  "main": "index.js",
+  "version": "0.0.1",
+  "authors": [
+    "Beatrix and Max Metral"
+  ],
+  "description": "A game",
+  "license": "MS-RL",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "pixi.js": "~3.0.7"
+  }
+}
