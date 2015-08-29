@@ -1,5 +1,7 @@
 'use strict';
 
+require('babel/polyfill');
+
 var algos = require('./algorithms'),
     Board = require('./Board'),
     Card = require('./Card');

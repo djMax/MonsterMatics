@@ -10,6 +10,7 @@
     "all": "npm run build && npm run test"
   },
   "dependencies": {
+    "babel": "^5.8.23",
     "babelify": "^6.2.0",
     "construx": "^1.0.0",
     "construx-copier": "^1.0.0",
