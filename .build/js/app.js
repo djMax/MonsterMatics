@@ -4686,26 +4686,145 @@ var Board = (function () {
 
         var board = [],
             cards = [];
-        for (var r = 0; r < rows; r++) {
-            board[r] = [];
-            for (var c = 0; c < columns; c++) {
-                var card = new _Card2['default'](parseInt(Math.random() * maxCard, 10) + 1, r, c);
-                board[r][c] = card;
+        for (var x = 0; x < columns; x++) {
+            board[x] = [];
+            for (var y = 0; y < rows; y++) {
+                var card = new _Card2['default'](parseInt(Math.random() * maxCard, 10) + 1, x, y);
+                board[x][y] = card;
                 cards.push(card);
             }
         }
+        this.maxCard = maxCard;
+        this.width = columns;
+        this.height = rows;
         this.cards = cards;
         this.grid = board;
     }
 
     _createClass(Board, [{
+        key: 'getMovesForRemovedCards',
+        value: function getMovesForRemovedCards(cards) {
+            var cardMoves = {};
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = cards[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var card = _step.value;
+
+                    console.log('Card in set', card.x, card.y);
+                    if (card.y > 0) {
+                        for (var y = 0; y < card.y; y++) {
+                            var key = card.x + '#' + y;
+                            if (cardMoves[key]) {
+                                cardMoves[key].dy++;
+                            } else {
+                                cardMoves[key] = { card: this.grid[card.x][y], y: y, dy: 1 };
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator['return']) {
+                        _iterator['return']();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            return Object.keys(cardMoves).map(function (k) {
+                return cardMoves[k];
+            });
+        }
+    }, {
+        key: 'removeAndReplace',
+        value: function removeAndReplace(cards, moves) {
+            moves = moves.slice().sort(function (a, b) {
+                return b.y - a.y;
+            });
+            console.log('moves', moves);
+            console.log('start\n', this.toString());
+            // Remove the cards
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = cards[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var c = _step2.value;
+
+                    this.grid[c.x][c.y] = null;
+                    this.cards.splice(this.cards.indexOf(c), 1);
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                        _iterator2['return']();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            console.log('removed\n', this.toString());
+            for (var x = 0; x < this.width; x++) {
+                for (var y = this.height - 1; y > 0; y--) {
+                    if (this.grid[x][y] === null) {
+                        // Move the items above down one
+                        for (var above = y - 1; above >= 0; above--) {
+                            if (this.grid[x][above]) {
+                                this.grid[x][above].y++;
+                                if (y !== 1) {
+                                    // Run this iteration again
+                                    y++;
+                                }
+                            }
+                            this.grid[x][above + 1] = this.grid[x][above];
+                        }
+                        this.grid[x][0] = null;
+                    }
+                }
+            }
+            console.log('moved\n', this.toString());
+            var newCards = [];
+            for (var x = 0; x < this.width; x++) {
+                for (var y = 0; y < this.height; y++) {
+                    if (this.grid[x][y] === null) {
+                        var card = new _Card2['default'](parseInt(Math.random() * this.maxCard, 10) + 1, x, y);
+                        this.grid[x][y] = card;
+                        this.cards.push(card);
+                        newCards.push(card);
+                    }
+                }
+            }
+            return newCards;
+        }
+    }, {
         key: 'toString',
         value: function toString() {
             var rows = [];
             for (var r = 0, rlen = this.grid.length; r < rlen; r++) {
                 var vals = [];
                 for (var c = 0, clen = this.grid[r].length; c < clen; c++) {
-                    vals.push(this.grid[r][c].value);
+                    if (this.grid[c][r]) {
+                        if (this.grid[c][r].x !== c || this.grid[c][r].y !== r) {
+                            console.log('Should be', c, r, 'but is', this.grid[c][r].x, this.grid[c][r].y);
+                        }
+                    }
+                    vals.push(this.grid[c][r] ? this.grid[c][r].value : '*');
                 }
                 rows.push(vals.join(' '));
             }
@@ -4731,12 +4850,12 @@ var _createClass = (function () { function defineProperties(target, props) { for
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var Card = (function () {
-    function Card(value, r, c) {
+    function Card(value, x, y) {
         _classCallCheck(this, Card);
 
         this.value = value;
-        this.row = r;
-        this.column = c;
+        this.x = x;
+        this.y = y;
     }
 
     _createClass(Card, [{
@@ -4803,6 +4922,7 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.findValidCombinations = findValidCombinations;
 exports.chooseTarget = chooseTarget;
+exports.scoreSolutions = scoreSolutions;
 var Combinatorics = require('js-combinatorics'),
     Card = require('./Card');
 
@@ -4820,6 +4940,14 @@ var mathFunctions = {
         return a / b;
     }
 };
+
+var pointValues = {
+    '×': 10,
+    '+': 1,
+    '-': 5,
+    '÷': 25
+};
+
 var mathOperators = ['×', '+', '-', '÷'];
 
 var Operators = {
@@ -4854,16 +4982,19 @@ function chooseTarget(board, setSize, minValue, maxValue, level) {
         operators: new Array(setSize - 1)
     };
     var permutations = Combinatorics.permutation(board.cards, setSize);
+    var pms = 0;
 
     permutations.forEach(function (permutation) {
+        pms++;
         // Make sure the cards are next to each other
         for (var ci = 1, len = permutation.length; ci < len; ci++) {
-            if (permutation[ci] === permutation[ci - 1] || Math.abs(permutation[ci].row, permutation[ci - 1].row) > 1 || Math.abs(permutation[ci].column, permutation[ci - 1].column) > 1) {
+            if (permutation[ci] === permutation[ci - 1] || Math.abs(permutation[ci].x, permutation[ci - 1].x) > 1 || Math.abs(permutation[ci].y, permutation[ci - 1].y) > 1) {
                 return;
             }
         }
         countResults(permutation, state, minValue, maxValue, 0);
     });
+    console.log('Considered', pms, state.occurrences, 'from', board.cards.length);
     var all = [];
     for (var result in state.occurrences) {
         all.push({
@@ -4879,6 +5010,58 @@ function chooseTarget(board, setSize, minValue, maxValue, level) {
         level = all.length + level;
     }
     return all[Math.min(level, all.length)];
+}
+
+function scoreSolutions(solutions) {
+    var addPoints = 0;
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = solutions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var sln = _step.value;
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = sln[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var op = _step2.value;
+
+                    addPoints += pointValues[op];
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                        _iterator2['return']();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+                _iterator['return']();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+
+    return addPoints;
 }
 
 function countResults(cards, state, min, max, operatorPosition) {
@@ -4925,27 +5108,27 @@ function solve(targetNumber, cards, operators, solutions, operatorPosition) {
 function pleaseDoNotExcuseMyDearAuntSally(cards, operators) {
     var result = cards[0].value,
         cardIndex = 1;
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
     try {
-        for (var _iterator = operators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var opix = _step.value;
+        for (var _iterator3 = operators[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var opix = _step3.value;
 
             result = mathFunctions[mathOperators[opix]](result, cards[cardIndex++].value);
         }
     } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
     } finally {
         try {
-            if (!_iteratorNormalCompletion && _iterator['return']) {
-                _iterator['return']();
+            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                _iterator3['return']();
             }
         } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
+            if (_didIteratorError3) {
+                throw _iteratorError3;
             }
         }
     }
@@ -4973,6 +5156,7 @@ window.setupGamePage = function setupGamePage() {
     var winWidth = window.innerWidth,
         winHeight = window.innerHeight;
     var renderer = PIXI.autoDetectRenderer(winWidth, winHeight);
+    var totalPoints = 0;
 
     renderer.view.style.position = "absolute";
     renderer.view.style.display = "block";
@@ -4987,43 +5171,37 @@ window.setupGamePage = function setupGamePage() {
         cols = 4;
     var cardWidth = parseInt((winWidth - rows * 10) / (rows + 2), 10);
     var cardHeight = parseInt((winHeight - cols * 10) / (cols + 1), 10);
-    var board = new Board(rows, cols, 10);
+    var board = new Board(cols, rows, 10);
     var target = algos.chooseTarget(board, 3, 1, 20, 0);
 
     var selections = [];
-    for (var x = 0; x < rows; x++) {
-        var _loop = function (y) {
-            var card = board.grid[x][y];
-            var sprite = makeCard(card.value, x, y, cardWidth, cardHeight, 0xFFFFFF);
-            sprite.mouseup = sprite.touchend = function (data) {
-                selections.push([card, sprite]);
-                if (selections.length === 3) {
-                    var slns = algos.findValidCombinations(target.target, selections.map(function (x) {
-                        return x[0];
-                    }));
-                    if (slns.length) {
-                        alert('YES');
-                    } else {
-                        alert('NO');
-                    }
-                }
-                this.alpha = .5;
-                console.log(data);
-            };
-            gameContainer.addChild(sprite);
-        };
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-        for (var y = 0; y < cols; y++) {
-            _loop(y);
+    try {
+        for (var _iterator = board.cards[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var card = _step.value;
+
+            addSprite(card);
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+                _iterator['return']();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
         }
     }
 
     var targetCard = makeCard(target.target, rows + .5, cols / 2 - .5, cardWidth, cardHeight, 0xcccccc);
-    targetCard.mouseup = targetCard.touchend = function (data) {
-        this.alpha = .5;
-        console.log(data);
-    };
-
+    targetCard.mouseup = targetCard.touchend = function () {};
     gameContainer.addChild(targetCard);
 
     function animate() {
@@ -5032,7 +5210,159 @@ window.setupGamePage = function setupGamePage() {
     }
 
     requestAnimationFrame(animate);
+
+    function addSprite(card) {
+        var sprite = makeCard(card.value, card.x, card.y, cardWidth, cardHeight, 0xFFFFFF);
+        card.sprite = sprite;
+        sprite.mouseup = sprite.touchend = function (data) {
+            selections.push(card);
+            if (selections.length === 3) {
+                var slns = algos.findValidCombinations(target.target, selections);
+                clearSelectedState(selections);
+                if (slns.length) {
+                    foundSolution(slns);
+                } else {
+                    foundBadSolution();
+                }
+                selections = [];
+                return;
+            }
+            this.alpha = .5;
+        };
+        gameContainer.addChild(sprite);
+    }
+
+    function foundSolution(slns) {
+        var addPoints = algos.scoreSolutions(slns);
+        totalPoints += addPoints;
+        $('#points>.label').text(totalPoints);
+
+        // Shrink the solution cards
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+            var _loop = function () {
+                var card = _step2.value;
+
+                TweenLite.to(card.sprite, .5, { height: 0, y: card.sprite.y + card.sprite.height }).eventCallback('onComplete', function () {
+                    card.sprite.mouseup = card.sprite.touchend = null;
+                    gameContainer.removeChild(card.sprite);
+                    //card.sprite.destroy(true);
+                });
+            };
+
+            for (var _iterator2 = selections[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                _loop();
+            }
+        } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                    _iterator2['return']();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
+            }
+        }
+
+        var moves = board.getMovesForRemovedCards(selections);
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+            for (var _iterator3 = moves[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var m = _step3.value;
+
+                var pos = getPosition(0, m.y + m.dy, cardWidth, cardHeight);
+                TweenLite.to(m.card.sprite, .5, { y: pos[1] });
+            }
+        } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                    _iterator3['return']();
+                }
+            } finally {
+                if (_didIteratorError3) {
+                    throw _iteratorError3;
+                }
+            }
+        }
+
+        var newCards = board.removeAndReplace(selections, moves);
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
+
+        try {
+            for (var _iterator4 = newCards[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                var c = _step4.value;
+
+                addSprite(c);
+                c.sprite.height = 0;
+                TweenLite.to(c.sprite, .5, { height: cardHeight });
+            }
+        } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                    _iterator4['return']();
+                }
+            } finally {
+                if (_didIteratorError4) {
+                    throw _iteratorError4;
+                }
+            }
+        }
+
+        console.log(board.toString());
+        target = algos.chooseTarget(board, 3, 1, 20, parseInt(totalPoints / 100));
+        if (!target) {}
+        targetCard.cardText.text = target.target;
+    }
+
+    function foundBadSolution() {
+        console.log("BAD");
+    }
 };
+
+function clearSelectedState(selections) {
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
+
+    try {
+        for (var _iterator5 = selections[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+            var s = _step5.value;
+
+            s.sprite.alpha = 1;
+        }
+    } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+                _iterator5['return']();
+            }
+        } finally {
+            if (_didIteratorError5) {
+                throw _iteratorError5;
+            }
+        }
+    }
+}
 
 function makeCard(value, x, y, cardWidth, cardHeight, color) {
     var card = new PIXI.Graphics();
@@ -5045,13 +5375,19 @@ function makeCard(value, x, y, cardWidth, cardHeight, color) {
     var sprite = new PIXI.Sprite(texture);
     sprite.interactive = true;
     var basicText = new PIXI.Text(value);
+    sprite.cardText = basicText;
     basicText.x = cardWidth / 2 - 8;
     basicText.y = cardHeight / 2 - 10;
     sprite.addChild(basicText);
-    sprite.x = (cardWidth + 10) * x + 10;
-    sprite.y = (cardHeight + 10) * y + 10;
+    var pos = getPosition(x, y, cardWidth, cardHeight);
+    sprite.x = pos[0];
+    sprite.y = pos[1];
 
     return sprite;
+}
+
+function getPosition(x, y, cardWidth, cardHeight) {
+    return [(cardWidth + 10) * x + 10, (cardHeight + 10) * y + 10];
 }
 
 },{"./Board":187,"./Card":188,"./algorithms":189,"babel/polyfill":184}]},{},[190]);

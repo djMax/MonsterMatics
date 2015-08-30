@@ -1,10 +1,15 @@
 {>"layouts/master" /}
 
 {<headScripts}
+    <script src="/components/zepto/zepto.min.js"></script>
     <script src="/components/pixi.js/bin/pixi.js"></script>
+    <script src="/components/gsap/src/minified/TweenLite.min.js"></script>
 {/headScripts}
 {<body}
-
+    <div id="points">
+        <div class="label">0</div>
+        <div>points</div>
+    </div>
 {/body}
 {<bodyScripts}
     <script>

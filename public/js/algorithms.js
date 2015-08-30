@@ -8,7 +8,15 @@ var mathFunctions = {
     '+': (a, b) => a + b,
     '-': (a, b) => a - b,
     '÷': (a, b) => a / b
-}
+};
+
+var pointValues = {
+    '×': 10,
+    '+': 1,
+    '-': 5,
+    '÷': 25
+};
+
 var mathOperators = ['×', '+', '-', '÷'];
 
 export var Operators = {
@@ -40,18 +48,21 @@ export function chooseTarget(board, setSize, minValue, maxValue, level) {
         operators: new Array(setSize - 1)
     };
     var permutations = Combinatorics.permutation(board.cards, setSize);
+    var pms = 0;
 
     permutations.forEach((permutation) => {
+        pms++;
         // Make sure the cards are next to each other
         for (var ci = 1, len = permutation.length; ci < len; ci++) {
             if (permutation[ci] === permutation[ci - 1] ||
-		Math.abs(permutation[ci].row, permutation[ci - 1].row) > 1 ||
-                Math.abs(permutation[ci].column, permutation[ci - 1].column) > 1) {
+		Math.abs(permutation[ci].x, permutation[ci - 1].x) > 1 ||
+                Math.abs(permutation[ci].y, permutation[ci - 1].y) > 1) {
                 return;
             }
         }
         countResults(permutation, state, minValue, maxValue, 0);
     });
+    console.log('Considered',pms,state.occurrences,'from',board.cards.length);
     let all = [];
     for (let result in state.occurrences) {
         all.push({
@@ -65,6 +76,16 @@ export function chooseTarget(board, setSize, minValue, maxValue, level) {
 	level = all.length + level;
     }
     return all[Math.min(level, all.length)];
+}
+
+export function scoreSolutions(solutions) {
+    var addPoints = 0;
+    for (var sln of solutions) {
+        for (var op of sln) {
+            addPoints += pointValues[op];
+        }
+    }
+    return addPoints;
 }
 
 function countResults(cards, state, min, max, operatorPosition) {

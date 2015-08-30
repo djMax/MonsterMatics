@@ -1,8 +1,8 @@
 export default class Card {
-    constructor(value, r, c) {
+    constructor(value, x, y) {
         this.value = value;
-        this.row = r;
-        this.column = c;
+        this.x = x;
+        this.y = y;
     }
 
     toString() {
